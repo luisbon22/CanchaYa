@@ -51,7 +51,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/canchas/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/canchas/*/estado").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated())
+                        .requestMatchers("/api/**").authenticated()
+                        // Todo lo demás es el frontend (index.html y sus archivos estáticos)
+                        .anyRequest().permitAll())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(errorHandler)
                         .accessDeniedHandler(errorHandler))

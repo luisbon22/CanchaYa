@@ -1,7 +1,8 @@
 import axios from 'axios'
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:8080',
+  // Mismo origen que el backend; VITE_API_URL solo hace falta si la API vive en otro dominio
+  baseURL: import.meta.env.VITE_API_URL ?? '',
   headers: { 'Content-Type': 'application/json' },
   timeout: 15000,
 })

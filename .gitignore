@@ -34,3 +34,8 @@ build/
 
 ### Entorno ###
 .env
+
+### Frontend ###
+frontend/node_modules/
+# Build del frontend: se genera con `npm run build` o dentro del Dockerfile
+src/main/resources/static/
