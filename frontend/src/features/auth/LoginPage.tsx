@@ -2,13 +2,12 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation } from '@tanstack/react-query'
-import { Link, useLocation, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { authApi } from '../../api/endpoints'
 import { Button } from '../../components/Button'
 import { Campo } from '../../components/Campo'
 import { useAuth } from '../../hooks/useAuth'
-import { inicioSegunRol } from '../../routes/guards'
 import { mensajeDeError } from '../../utils/errors'
 
 const esquema = z.object({
@@ -20,10 +19,6 @@ type Datos = z.infer<typeof esquema>
 
 export function LoginPage() {
   const { iniciarSesion } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const desde = (location.state as { desde?: string } | null)?.desde
-
   const {
     register,
     handleSubmit,
@@ -34,9 +29,8 @@ export function LoginPage() {
     mutationFn: authApi.login,
     onSuccess: (respuesta) => {
       iniciarSesion(respuesta)
+      // SoloInvitados redirige al destino en cuanto hay sesión
       toast.success(`¡Hola, ${respuesta.nombre}!`)
-      const destino = respuesta.rol === 'CLIENTE' && desde ? desde : inicioSegunRol(respuesta.rol)
-      navigate(destino, { replace: true })
     },
     onError: (error) => toast.error(mensajeDeError(error)),
   })
