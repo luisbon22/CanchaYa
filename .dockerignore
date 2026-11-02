@@ -4,3 +4,5 @@ target/
 .vscode/
 *.iml
 *.log
+frontend/node_modules/
+src/main/resources/static/

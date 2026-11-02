@@ -1,4 +1,15 @@
-# ---------- Etapa 1: compilación ----------
+# ---------- Etapa 1: frontend ----------
+FROM node:22-alpine AS frontend
+WORKDIR /app/frontend
+
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+
+COPY frontend/ ./
+# vite.config.ts deja el build en ../src/main/resources/static
+RUN npm run build
+
+# ---------- Etapa 2: backend ----------
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
@@ -7,9 +18,10 @@ COPY pom.xml .
 RUN mvn -B -q dependency:go-offline
 
 COPY src ./src
+COPY --from=frontend /app/src/main/resources/static ./src/main/resources/static
 RUN mvn -B -q package -DskipTests
 
-# ---------- Etapa 2: ejecución ----------
+# ---------- Etapa 3: ejecución ----------
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
