@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Verde cancha */
+  --color-cancha-50: #f0fdf4;
+  --color-cancha-100: #dcfce7;
+  --color-cancha-200: #bbf7d0;
+  --color-cancha-500: #22c55e;
+  --color-cancha-600: #16a34a;
+  --color-cancha-700: #15803d;
+  --color-cancha-800: #166534;
+  --color-cancha-900: #14532d;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-cancha-600;
+  }
+}
