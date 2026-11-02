@@ -1,29 +1,23 @@
-# CanchaYa Web
+# CanchaYa · Frontend
 
-Interfaz web de [CanchaYa API](https://github.com/luisbon22/CanchaYa) para reservar canchas de fútbol desde el celular o el computador, sin necesidad de Postman.
+Interfaz web de CanchaYa para reservar canchas de fútbol desde el celular o el computador. Se compila dentro del jar de Spring Boot y se despliega junto con la API (ver el [README principal](../README.md)).
 
 ## Tecnologías
 
 React 19 · Vite · TypeScript · React Router · TanStack Query · Axios · Tailwind CSS · React Hook Form + Zod · Sonner (toasts)
 
-## Cómo ejecutarlo
+## Desarrollo
 
-Requisitos: Node 20 o superior y el backend corriendo (por defecto en `http://localhost:8080`).
+Requisitos: Node 20 o superior y el backend corriendo en `http://localhost:8080`.
 
 ```bash
-git clone https://github.com/luisbon22/canchaya-web.git
-cd canchaya-web
 npm install
 npm run dev
 ```
 
-La app queda en `http://localhost:5173`. Si el backend está en otra URL, cree un archivo `.env.local`:
+Vite levanta `http://localhost:5173` y redirige las llamadas a `/api` hacia el backend, así que no hace falta configurar CORS.
 
-```bash
-VITE_API_URL=http://localhost:8081
-```
-
-El backend permite por defecto el origen `http://localhost:5173` (variable `CORS_ORIGINS`).
+`npm run build` genera el frontend en `../src/main/resources/static`, de donde lo sirve Spring Boot. Si alguna vez la API vive en otro dominio, defina `VITE_API_URL` antes del build.
 
 ### Cuentas de prueba
 
@@ -60,6 +54,7 @@ El backend permite por defecto el origen `http://localhost:5173` (variable `CORS
 - **Errores en lenguaje humano:** `utils/errors.ts` traduce los errores de la API. Un `409` al reservar se muestra como "Alguien acaba de reservar esa hora, elige otra." y la disponibilidad se recarga sola.
 - **Confirmación antes de reservar y cancelar**, mostrando cancha, fecha, horario y precio.
 - **Sesión:** el token JWT vive en memoria y en `localStorage`; un interceptor de Axios lo agrega a cada petición y, ante un `401`, cierra la sesión y lleva a `/login`.
+- **Mismo origen:** en producción frontend y API se sirven desde el mismo servidor; el cliente Axios usa rutas relativas (`/api/...`).
 - **Rutas por rol:** las rutas de cliente y de admin están protegidas según el rol de la sesión. El panel de administración se descarga solo cuando un admin lo abre.
 - **Accesibilidad:** etiquetas en todos los campos, foco visible, botones de al menos 44 px, modales que cierran con Escape y franjas con descripción para lectores de pantalla.
 
@@ -79,9 +74,3 @@ src
 ├── routes       # router y rutas protegidas
 └── utils        # formato de moneda (COP), fechas y errores
 ```
-
-## Despliegue
-
-- **Vercel:** importar el repositorio, framework Vite, variable `VITE_API_URL` con la URL del backend. `vercel.json` ya redirige todas las rutas a `index.html`.
-- **Netlify:** build `npm run build`, carpeta `dist`, misma variable. `public/_redirects` cubre las rutas del SPA.
-- En el backend, agregar el dominio del frontend a `CORS_ORIGINS`.

@@ -1,6 +1,6 @@
-# CanchaYa API
+# CanchaYa
 
-API REST para la gestión de reservas de canchas deportivas. Un negocio administra sus canchas y horarios, y los clientes consultan disponibilidad, reservan y cancelan.
+Aplicación web para la reserva de canchas deportivas: API REST con Spring Boot y frontend en React, desplegados juntos. Un negocio administra sus canchas y horarios, y los clientes consultan disponibilidad, reservan y cancelan.
 
 ## Tecnologías
 
@@ -14,7 +14,8 @@ API REST para la gestión de reservas de canchas deportivas. Un negocio administ
 | Documentación | Springdoc OpenAPI (Swagger UI) |
 | Pruebas | JUnit 5, Mockito, AssertJ, JaCoCo |
 | Contenedores | Docker, Docker Compose |
-| Build | Maven (wrapper incluido) |
+| Frontend | React 19, Vite, TypeScript, Tailwind CSS, TanStack Query |
+| Build | Maven (wrapper incluido) y npm |
 
 ## Modelo de datos
 
@@ -63,20 +64,37 @@ cd CanchaYa
 docker compose up --build
 ```
 
-La API queda en `http://localhost:8080` y Swagger UI en `http://localhost:8080/swagger-ui.html`.
+| Qué | URL |
+| --- | --- |
+| Aplicación web | `http://localhost:8080` |
+| Swagger UI | `http://localhost:8080/swagger-ui.html` |
+| API | `http://localhost:8080/api/...` |
+
 Si el puerto 8080 está ocupado: `API_PORT=8081 docker compose up --build`.
 
 Las variables (`DB_URL`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`, `JWT_EXPIRATION`, `CORS_ORIGINS`) tienen valores por defecto para desarrollo; para cambiarlas copie `.env.example` como `.env`.
 
 ### Sin Docker
 
-Requisitos: JDK 21 y un PostgreSQL local con una base `canchaya` (usuario y contraseña `canchaya`, o ajuste las variables de entorno).
+Requisitos: JDK 21, Node 20 o superior y un PostgreSQL local con una base `canchaya` (usuario y contraseña `canchaya`, o ajuste las variables de entorno).
 
 ```bash
+cd frontend && npm ci && npm run build && cd ..
 ./mvnw spring-boot:run
 ```
 
-Flyway crea las tablas y carga los datos iniciales al arrancar.
+`npm run build` deja el frontend en `src/main/resources/static`, así Spring Boot lo sirve en `http://localhost:8080`. Flyway crea las tablas y carga los datos iniciales al arrancar.
+
+### Desarrollo del frontend
+
+Con el backend corriendo en el puerto 8080:
+
+```bash
+cd frontend
+npm run dev
+```
+
+Vite levanta `http://localhost:5173` con recarga en caliente y redirige las llamadas a `/api` hacia el backend.
 
 ### Pruebas
 
@@ -191,13 +209,19 @@ Respuesta `201 Created`:
 - **Reservas completadas.** Una tarea programada marca cada 15 minutos como `COMPLETADA` las reservas confirmadas que ya terminaron.
 - **JWT sin estado.** El token lleva el email, id, nombre y rol; el filtro valida la firma y la vigencia en cada petición. Los errores 401/403 de la cadena de seguridad usan el mismo formato JSON que el resto de la API.
 - **Registro seguro.** `/api/auth/register` siempre crea usuarios `CLIENTE`; los administradores se crean desde la base de datos.
-- **CORS** configurable con `CORS_ORIGINS` para el frontend.
+- **Monolito, un solo despliegue.** El frontend (React) vive en `frontend/` y su build se empaqueta dentro del jar de Spring Boot. El `Dockerfile` compila primero el frontend con Node, luego el backend con Maven y produce una única imagen. Frontend y API comparten origen, así que en producción no hace falta CORS; `SpaConfig` sirve los archivos del build y devuelve `index.html` en las rutas del frontend para que recargar `/canchas/1` funcione.
+- **CORS** configurable con `CORS_ORIGINS`, solo necesario si el frontend se sirve desde otro dominio.
+
+## Despliegue
+
+Una sola imagen Docker con la aplicación completa. En Render o Railway: crear un PostgreSQL, desplegar el repositorio usando el `Dockerfile` y definir `DB_URL`, `DB_USER`, `DB_PASSWORD` y `JWT_SECRET`.
 
 ## Estructura
 
 ```
+frontend/         # React + Vite + TypeScript (ver frontend/README.md)
 src/main/java/com/luisbonilla/canchaya
-├── config        # SecurityConfig, OpenApiConfig, TiempoConfig
+├── config        # SecurityConfig, OpenApiConfig, TiempoConfig, SpaConfig
 ├── controller    # AuthController, CanchaController, ReservaController, AdminController
 ├── dto           # request / response
 ├── entity        # Usuario, Cancha, Reserva y enums
